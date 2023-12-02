@@ -1,14 +1,16 @@
-from dataclasses import dataclass
-from datetime import time
+from datetime import datetime, timedelta
 import aiosqlite, os
-
-
-from dataclasses import dataclass
 from typing import Optional
 
-from src.dataclasses import User
+from aiosqlite import cursor
+
+from src.dataclasses import Block, User
+from src.logger import Logger
+
+db_log = Logger("db_log", "log/db.log")
 
 
+@db_log.class_log
 class DataBase:
     def __init__(self, database_path: str = ":memory:"):
         self.database_path: str = database_path
@@ -85,5 +87,44 @@ class DataBase:
                 "UPDATE Users SET on_the_party = 1 WHERE telegram_id = ?", (tg_id,)
             )
 
-    async def block_user(self, tg_id: int, delta: time):
-        pass
+    async def block_user(self, tg_id: int, delta: timedelta = timedelta(minutes=5)):
+        duration_in_seconds = int(delta.total_seconds())  # Convert timedelta to seconds
+        async with self.conn.cursor() as cursor:
+            await cursor.execute(
+                "INSERT INTO Block(user_id, start, block_duration) VALUES (?, ?, ?)",
+                (tg_id, datetime.now(), duration_in_seconds),
+            )
+
+    async def delete_block(self, tg_id: int):
+        async with self.conn.cursor() as cursor:
+            await cursor.execute("DELETE FROM Block WHERE user_id = ?", (tg_id,))
+
+    async def is_block(self, tg_id: int):
+        async with self.conn.cursor() as cursor:
+            await cursor.execute(
+                "SELECT start, block_duration FROM Block WHERE user_id = ?", (tg_id,)
+            )
+            block = await cursor.fetchone()
+
+            if block is None:
+                return False
+
+            start_time, duration_in_seconds = block
+
+            # Convert the duration from string to integer if necessary
+            if isinstance(duration_in_seconds, str):
+                duration_in_seconds = int(duration_in_seconds)
+
+            start_time = (
+                datetime.fromisoformat(start_time)
+                if isinstance(start_time, str)
+                else start_time
+            )
+
+            duration = timedelta(seconds=duration_in_seconds)
+            end_time = start_time + duration
+
+            if datetime.now() >= end_time:
+                await self.delete_block(tg_id)
+                return False
+            return True

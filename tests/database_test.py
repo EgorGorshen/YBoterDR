@@ -77,3 +77,13 @@ async def test_user_out(db_connection: DataBase, faker_data: Faker):
     user = await db_connection.get_user(tg_id)
     assert user is not None
     assert user.on_the_party == False
+
+
+async def test_block_user(db_connection: DataBase, faker_data: Faker):
+    tg_id = faker_data.random_int(min=1)
+    name = faker_data.name()
+
+    await db_connection.user_reg(tg_id=tg_id, name=name, on_the_party=True)
+    await db_connection.block_user(tg_id=tg_id)
+
+    assert await db_connection.is_block(tg_id=tg_id)

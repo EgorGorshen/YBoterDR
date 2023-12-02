@@ -13,7 +13,7 @@ class DataBase:
     def __init__(self, database_path: str = ":memory:"):
         self.database_path: str = database_path
         self.develop: bool = True
-        self.conn: Optional[aiosqlite.Connection] = None
+        self.conn: aiosqlite.Connection
 
     @classmethod
     async def init(cls, database_path: str = ":memory:", test_data: bool = False):
@@ -74,10 +74,16 @@ class DataBase:
         return User(*result)
 
     async def user_out(self, tg_id: int):
-        pass
+        async with self.conn.cursor() as cursor:
+            await cursor.execute(
+                "UPDATE Users SET on_the_party = 0 WHERE telegram_id = ?", (tg_id,)
+            )
 
     async def user_in(self, tg_id: int):
-        pass
+        async with self.conn.cursor() as cursor:
+            await cursor.execute(
+                "UPDATE Users SET on_the_party = 1 WHERE telegram_id = ?", (tg_id,)
+            )
 
     async def block_user(self, tg_id: int, delta: time):
         pass

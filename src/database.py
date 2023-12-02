@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-import aiosqlite, os
 from typing import Optional
 
-from aiosqlite import cursor
-
-from src.dataclasses import Block, User
+from src.dataclasses import User
 from src.logger import Logger
+
+import aiosqlite, os
+
 
 db_log = Logger("db_log", "log/db.log")
 

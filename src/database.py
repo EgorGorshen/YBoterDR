@@ -4,152 +4,128 @@ Data struct in docs/db_struct.md
 """
 from datetime import datetime, timedelta
 from typing import Optional
-
 import os
-import aiosqlite
+import sqlite3
 
 from src.dataclasses import User
 from src.logger import Logger
-
 
 db_log = Logger("db_log", "log/db.log")
 
 
 @db_log.class_log
 class DataBase:
-    """DataBase class to work with telegram database"""
+    """DataBase class to work with a telegram database using sqlite3."""
 
     def __init__(self, database_path: str = ":memory:"):
         """init DataBase class"""
         self.database_path: str = database_path
         self.develop: bool = True
-        self.conn: aiosqlite.Connection
-
-    @classmethod
-    async def init(cls, database_path: str = ":memory:", test_data: bool = False):
-        """init async client"""
-        instance = cls()
-        instance.conn = await aiosqlite.connect(database_path)
-
-        if instance.develop:
+        self.conn: sqlite3.Connection = sqlite3.connect(database_path)
+        if self.develop:
             if os.path.exists(database_path):
-                await instance._delete_data()
-            await instance._init_data()
+                self._delete_data()
+            self._init_data()
 
-            if test_data:
-                await instance._init_test_data()
-        return instance
-
-    async def close(self):
-        """clode Connection with database"""
+    def close(self):
+        """Close connection with the database."""
         if self.conn:
-            await self.conn.close()
+            self.conn.close()
 
-    @classmethod
-    async def _read_init_text(cls) -> str:
-        """get init script for data"""
+    @staticmethod
+    def _read_init_text() -> str:
+        """Get init script for the database."""
         with open("db_requests/init_db.sql", "r", encoding="utf-8") as init_db_req:
             return init_db_req.read()
 
-    async def _init_data(self):
-        """init data"""
-        async with self.conn.cursor() as cursor:
-            init_req = await DataBase._read_init_text()
-            await cursor.executescript(init_req)
+    def _init_data(self):
+        """Initialize the database with the schema."""
+        init_req = DataBase._read_init_text()
+        self.conn.executescript(init_req)
+        self.conn.commit()
 
-    async def _delete_data(self):
-        """dalete data from database"""
-        # TODO:
-        pass
-
-    async def _init_test_data(self):
-        """init test data"""
-        # TODO:
+    def _delete_data(self):
+        """Delete data from the database."""
+        # TODO: Implement this method if needed.
         pass
 
     # >>>>>>>>> user
 
-    async def user_reg(self, tg_id: int, name: str, on_the_party: bool = False) -> bool:
-        """user registration"""
-
-        # checking for availability in the database
-        if await self.get_user(tg_id):
+    def user_reg(self, tg_id: int, name: str, on_the_party: bool = False) -> bool:
+        """Register a user."""
+        if self.get_user(tg_id):
             return True
-
-        async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                "INSERT INTO Users(telegram_id, name, on_the_party) VALUES(?, ?, ?)",
-                (tg_id, name, on_the_party),
-            )
-
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "INSERT INTO Users(telegram_id, name, on_the_party) VALUES(?, ?, ?)",
+            (tg_id, name, on_the_party),
+        )
+        self.conn.commit()
         return True
 
-    async def get_user(self, tg_id: int) -> Optional[User]:
-        """get user from data base"""
-        async with self.conn.cursor() as cursor:
-            await cursor.execute("SELECT * FROM Users WHERE telegram_id = ?", (tg_id,))
-            result = await cursor.fetchone()
+    def get_user(self, tg_id: int) -> Optional[User]:
+        """Get a user from the database."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM Users WHERE telegram_id = ?", (tg_id,))
+        result = cursor.fetchone()
+        return User(*result) if result else None
 
-        if result is None:
-            return None
+    def user_out(self, tg_id: int):
+        """Marks the user who left the party."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "UPDATE Users SET on_the_party = 0 WHERE telegram_id = ?", (tg_id,)
+        )
+        self.conn.commit()
 
-        return User(*result)
+    def user_in(self, tg_id: int):
+        """Marks the user who came to the party."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "UPDATE Users SET on_the_party = 1 WHERE telegram_id = ?", (tg_id,)
+        )
+        self.conn.commit()
 
-    async def user_out(self, tg_id: int):
-        """marks the user who left the party"""
-        async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                "UPDATE Users SET on_the_party = 0 WHERE telegram_id = ?", (tg_id,)
-            )
-
-    async def user_in(self, tg_id: int):
-        """marks the user who came to the party"""
-        async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                "UPDATE Users SET on_the_party = 1 WHERE telegram_id = ?", (tg_id,)
-            )
-
-    async def block_user(self, tg_id: int, delta: timedelta = timedelta(minutes=5)):
-        """blocks the user"""
+    def block_user(self, tg_id: int, delta: timedelta = timedelta(minutes=5)):
+        """Blocks the user."""
         duration_in_seconds = int(delta.total_seconds())  # Convert timedelta to seconds
-        async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                "INSERT INTO Block(user_id, start, block_duration) VALUES (?, ?, ?)",
-                (tg_id, datetime.now(), duration_in_seconds),
-            )
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "INSERT INTO Block(user_id, start, block_duration) VALUES (?, ?, ?)",
+            (tg_id, datetime.now(), duration_in_seconds),
+        )
+        self.conn.commit()
 
-    async def delete_block(self, tg_id: int):
-        """removes the user's lock"""
-        async with self.conn.cursor() as cursor:
-            await cursor.execute("DELETE FROM Block WHERE user_id = ?", (tg_id,))
+    def delete_block(self, tg_id: int):
+        """Removes the user's lock."""
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Block WHERE user_id = ?", (tg_id,))
+        self.conn.commit()
 
-    async def is_block(self, tg_id: int):
-        """checks if the user is blocked"""
-        async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                "SELECT start, block_duration FROM Block WHERE user_id = ?", (tg_id,)
-            )
-            block = await cursor.fetchone()
+    def is_block(self, tg_id: int) -> bool:
+        """Checks if the user is blocked."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT start, block_duration FROM Block WHERE user_id = ?", (tg_id,)
+        )
+        block = cursor.fetchone()
+        if block is None:
+            return False
 
-            if block is None:
-                return False
+        start_time, duration_in_seconds = block
 
-            start_time, duration_in_seconds = block
+        # Convert the duration from string to integer if necessary
+        if isinstance(duration_in_seconds, str):
+            duration_in_seconds = int(duration_in_seconds)
 
-            # Convert the duration from string to integer if necessary
-            if isinstance(duration_in_seconds, str):
-                duration_in_seconds = int(duration_in_seconds)
+        # Convert start_time to a datetime object, including microseconds
+        if isinstance(start_time, str):
+            # Adjust the format to include microseconds
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
 
-            start_time = (
-                datetime.fromisoformat(start_time)
-                if isinstance(start_time, str)
-                else start_time
-            )
+        end_time = start_time + timedelta(seconds=duration_in_seconds)
 
-            duration = timedelta(seconds=duration_in_seconds)
-            end_time = start_time + duration
-
-            if datetime.now() >= end_time:
-                await self.delete_block(tg_id)
-                return False
-            return True
+        if datetime.now() >= end_time:
+            self.delete_block(tg_id)
+            return False
+        return True

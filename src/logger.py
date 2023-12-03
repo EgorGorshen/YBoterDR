@@ -4,6 +4,8 @@ from aiogram.types import Message, CallbackQuery
 
 
 class Logger:
+    """Logger class to log functions and class methods"""
+
     def __init__(self, name, log_file, level=logging.INFO):
         """Setup as many loggers as you want"""
 
@@ -17,10 +19,13 @@ class Logger:
         self.logger.addHandler(handler)
 
     def log_function_call(self, func):
+        """Decorator to log fuction call"""
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             self.logger.info(
-                f"Calling function {func.__name__} with arguments {args} and keyword arguments {kwargs}"
+                f"Calling function {func.__name__} with arguments \
+                        {args} and keyword arguments {kwargs}"
             )
             try:
                 result = func(*args, **kwargs)
@@ -94,6 +99,7 @@ class Logger:
         return wrapper
 
     def class_log(self, cls):
+        """Decorator to log all class methods"""
         for name, method in cls.__dict__.items():
             if callable(method):
                 if "message" in method.__annotations__:

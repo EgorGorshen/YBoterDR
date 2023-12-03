@@ -107,3 +107,4 @@ CREATE TABLE IF NOT EXISTS Likes (
 - [aiogram](https://docs.aiogram.dev/en/dev-3.x/)
 - [test data mockaroo](https://www.mockaroo.com)
 - [pytest-asyncio](https://tonybaloney.github.io/posts/async-test-patterns-for-pytest-and-unittest.html)
+- [Faker](https://pypi.org/project/Faker/)

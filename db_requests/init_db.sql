@@ -23,9 +23,6 @@ CREATE TABLE IF NOT EXISTS Tracks (
     id INTEGER PRIMARY KEY,
     name TEXT,
     author TEXT,
-    genre TEXT, -- Дополнительное поле для жанра
-    duration INTEGER, -- Дополнительное поле для длительности
-    explicit INTEGER DEFAULT 0, -- Дополнительное поле для эксплицитного содержания
     number_of_calls INTEGER DEFAULT 0 -- Установлено значение по умолчанию
 );
 
@@ -40,8 +37,6 @@ CREATE TABLE IF NOT EXISTS Block (
 CREATE TABLE IF NOT EXISTS Meal (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    description TEXT, -- Дополнительное поле для описания
-    dietary_info TEXT, -- Дополнительное поле для диетической информации
     price INTEGER
 );
 
@@ -52,4 +47,3 @@ CREATE TABLE IF NOT EXISTS Likes (
     FOREIGN KEY (track_id) REFERENCES Tracks(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES Users(telegram_id) ON DELETE CASCADE
 );
-

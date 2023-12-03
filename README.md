@@ -30,7 +30,7 @@
         изменить порядок треков в очереди
     - [ ] block user 
         заблокировать пользователя
-    - [ ] info about user ariv and left 
+    - [x] info about user ariv and left 
         сообщать о подходе или уезеде пользователя
 
 - [ ] media messages:
@@ -42,7 +42,6 @@
 CREATE TABLE IF NOT EXISTS Users (
     telegram_id INTEGER PRIMARY KEY,
     name TEXT,
-    join_date TEXT, -- Переименовано для ясности
     number_of_tracks INTEGER DEFAULT 0, -- Установлено значение по умолчанию
     number_of_media INTEGER DEFAULT 0, -- Установлено значение по умолчанию
     on_the_party INTEGER DEFAULT 0 -- INTEGER для BOOLEAN, 0 = нет, 1 = да
@@ -65,9 +64,6 @@ CREATE TABLE IF NOT EXISTS Tracks (
     id INTEGER PRIMARY KEY,
     name TEXT,
     author TEXT,
-    genre TEXT, -- Дополнительное поле для жанра
-    duration INTEGER, -- Дополнительное поле для длительности
-    explicit INTEGER DEFAULT 0, -- Дополнительное поле для эксплицитного содержания
     number_of_calls INTEGER DEFAULT 0 -- Установлено значение по умолчанию
 );
 
@@ -82,8 +78,6 @@ CREATE TABLE IF NOT EXISTS Block (
 CREATE TABLE IF NOT EXISTS Meal (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    description TEXT, -- Дополнительное поле для описания
-    dietary_info TEXT, -- Дополнительное поле для диетической информации
     price INTEGER
 );
 

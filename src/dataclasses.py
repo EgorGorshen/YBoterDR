@@ -29,9 +29,6 @@ class Track:
     id: int
     name: str
     author: str
-    genre: str
-    duration: int
-    explicit: int = 0
     number_of_calls: int = 0
 
 
@@ -47,8 +44,6 @@ class Block:
 class Meal:
     id: int
     name: str
-    description: str
-    dietary_info: str
     price: int
 
 

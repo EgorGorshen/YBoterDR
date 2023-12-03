@@ -3,9 +3,9 @@
 ## TODO
 
 - [ ] commands:
-    - [ ] start:
+    - [x] start:
         - [x] welcome message
-        - [ ] open menu
+        - [x] open menu
     - [ ] add_track_queue
         добавлять трек в очередь [command] [track name]
     - [ ] like
@@ -20,7 +20,7 @@
         выбор подарка
     - [ ] next_tracks
         список следующих треков
-    - [ ] we_left
+    - [x] left
         мы ушли показывает что человек ушёл или ещё здесь
     - [x] arrived
         мы приехали 
@@ -104,3 +104,4 @@ CREATE TABLE IF NOT EXISTS Likes (
 - [test data mockaroo](https://www.mockaroo.com)
 - [pytest-asyncio](https://tonybaloney.github.io/posts/async-test-patterns-for-pytest-and-unittest.html)
 - [Faker](https://pypi.org/project/Faker/)
+- [Ботостроение Telegram. Установка команд. Aiogram3 - полное руководство](https://www.youtube.com/watch?v=HRAzGBdwCkw&list=PLRU2Gs7fnCuiwcEDU0AWGkSTawEQpLFPb&index=4)

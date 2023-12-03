@@ -2,7 +2,7 @@ import os
 import sys
 import json
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message
+from aiogram.types import Message, BotCommand, BotCommandScopeDefault
 import dotenv
 from src.database import DataBase
 
@@ -40,3 +40,28 @@ async def get_user_info_from_message(message: Message) -> tuple[int, str] | None
         return
 
     return chat_id, from_user.full_name
+
+
+async def set_user_commands():
+    """set menu commands"""
+    command_list = [
+        BotCommand(
+            command="start",
+            description="Начните своё путешествие с YBoterDR. Эта команда откроет главное меню.",
+        ),
+        BotCommand(command="help", description="Получите подсказки и инструкции."),
+        BotCommand(command="add_track_queue", description="Добавьте трек в очередь."),
+        BotCommand(command="like", description="Отметьте понравившийся трек."),
+        BotCommand(command="delete", description="Удалите последний добавленный трек."),
+        BotCommand(command="find_track", description="Найдите трек по названию."),
+        BotCommand(command="toast", description="Сказать тост и затушить музыку."),
+        BotCommand(
+            command="next_tracks", description="Посмотрите следующие треки в очереди."
+        ),
+        BotCommand(command="left", description="Сообщите, что вы покидаете вечеринку."),
+        BotCommand(
+            command="arrived", description="Сообщите, что вы прибыли на вечеринку."
+        ),
+    ]
+
+    await bot.set_my_commands(command_list, BotCommandScopeDefault())

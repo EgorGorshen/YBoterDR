@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, user
 from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
@@ -25,6 +25,11 @@ async def start(message: Message):
         await message.answer(REGISTRATION_ERROR_MESSAGE)
         return
 
+    await message.answer(START_MESSAGE)
+
+
+@user_router.message(Command("help"))
+async def help(message: Message):
     await message.answer(START_MESSAGE)
 
 

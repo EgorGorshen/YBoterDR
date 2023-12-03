@@ -12,7 +12,7 @@ import asyncio
 import logging
 import sys
 
-from src.utils import dispatcher, bot
+from src.utils import dispatcher, bot, set_user_commands
 from src.handlers.users import user_router
 from src.handlers.admin import admin_router
 
@@ -23,6 +23,9 @@ async def init_routers():
     # Include routers for handling user interactions
     dispatcher.include_router(user_router)
     dispatcher.include_router(admin_router)
+
+    # set commands
+    await set_user_commands()
 
     # Start polling bot
     await dispatcher.start_polling(bot)

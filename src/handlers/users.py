@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
-from src.handlers.admin import inform_the_admins_about_the_arrival
+from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
@@ -41,4 +41,20 @@ async def user_com(message: Message):
         await message.answer("Прежде чем начать пользование запустите команду /start")
         return
 
-    await inform_the_admins_about_the_arrival(user)
+    await inform_the_admins_about_the_com_t_or_left_f(user, True)
+
+
+@user_router.message(Command("left"))
+async def user_left(message: Message):
+    from_user = await get_user_info_from_message(message)
+    if from_user is None:
+        return
+
+    id, _ = from_user
+    data_base.user_out(id)
+    user = data_base.get_user(id)
+    if user is None:
+        await message.answer("Прежде чем начать пользование запустите команду /start")
+        return
+
+    await inform_the_admins_about_the_com_t_or_left_f(user, False)

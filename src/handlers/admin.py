@@ -10,7 +10,10 @@ admin_log = Logger("admin_log", "log/admin.log")
 
 
 @admin_log.log_function_call
-async def inform_the_admins_about_the_arrival(user: User):
+async def inform_the_admins_about_the_com_t_or_left_f(user: User, com: bool):
     """inform admins about user comming"""
     for id in ADMINS_IDS:
-        await bot.send_message(chat_id=id, text=f"Пользоваетль {user.name} приехал")
+        if com:
+            await bot.send_message(chat_id=id, text=f"Пользоваетль {user.name} приехал")
+        else:
+            await bot.send_message(chat_id=id, text=f"Пользоваетль {user.name} уезжает")

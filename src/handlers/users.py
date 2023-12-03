@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, user
 from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
@@ -6,6 +6,7 @@ from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
 from src.utils import data_base, get_user_info_from_message
+from src.yandex_api import found_track
 
 
 user_router = Router()
@@ -63,3 +64,8 @@ async def user_left(message: Message):
         return
 
     await inform_the_admins_about_the_com_t_or_left_f(user, False)
+
+
+@user_router.message(F.text.as_("request"))
+async def find_track(message: Message, request: str):
+    await found_track(request)

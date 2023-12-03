@@ -2,6 +2,7 @@
 import pytest
 from faker import Faker
 from src.database import DataBase
+from src.dataclasses import Track
 
 
 @pytest.fixture(name="connection")
@@ -93,3 +94,17 @@ def test_block_user(connection: DataBase, faker_data: Faker):
     connection.block_user(tg_id=tg_id)
 
     assert connection.is_block(tg_id=tg_id)
+
+
+def test_add_and_get_track(connection: DataBase, faker_data: Faker):
+    """Test for add and get track func"""
+    name = faker_data.name()
+    author = faker_data.name()
+    returner = Track(0, name, author)
+
+    connection.add_track(name, author)
+
+    get_track = connection.get_track(name, author)
+    assert get_track is not None
+    assert returner.author == get_track.author
+    assert returner.name == get_track.name

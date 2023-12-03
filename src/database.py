@@ -7,7 +7,7 @@ from typing import Optional
 import os
 import sqlite3
 
-from src.dataclasses import User
+from src.dataclasses import Track, User
 from src.logger import Logger
 
 db_log = Logger("db_log", "log/db.log")
@@ -142,3 +142,34 @@ class DataBase:
             self.delete_block(tg_id)
             return False
         return True
+
+    # >>>>>>>>> tracks
+    def add_track(self, name: str, author: str):
+        """add track to db"""
+        track = self.get_track(name, author)
+
+        # check out if treck exists
+        if track is not None:
+            return
+
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "INSERT INTO Tracks(name, author, number_of_calls) VALUES(?, ?, ?)",
+            (name, author, 1),
+        )
+        self.conn.commit()
+
+    def get_track(self, name: str, author: str) -> Track | None:
+        """get track from database"""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT * FROM Tracks WHERE name = ? AND author = ? ",
+            (name, author),
+        )
+
+        track = cursor.fetchone()
+
+        if track is None:
+            return None
+
+        return Track(*track)

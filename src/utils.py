@@ -10,8 +10,10 @@ from src.database import DataBase
 data_base = DataBase("sqlite.db")
 # Load env from .env file
 dotenv.load_dotenv()
+
 TELEBOT_TOKEN = os.getenv("TELEBOT_TOKEN")
 ADMINS_IDS = os.getenv("ADMINS_IDS")
+YANDEX_TOKEN = os.getenv("YANDEX_API_TOKEN")
 
 # Checkout if token exists in .env file
 if TELEBOT_TOKEN is None:
@@ -19,6 +21,9 @@ if TELEBOT_TOKEN is None:
 
 if ADMINS_IDS is None:
     sys.exit('ERROR: ADMINS_IDS not found in ".env" file')
+
+if YANDEX_TOKEN is None:
+    sys.exit('ERROR: YANDEX_API_TOKEN not found in ".env" file')
 
 ADMINS_IDS = json.loads(ADMINS_IDS)
 

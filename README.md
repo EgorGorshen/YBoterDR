@@ -4,7 +4,7 @@
 
 - [ ] commands:
     - [ ] start:
-        - [ ] welcome message
+        - [x] welcome message
         - [ ] open menu
     - [ ] add_track_queue
         добавлять трек в очередь [command] [track name]
@@ -22,7 +22,7 @@
         список следующих треков
     - [ ] we_left
         мы ушли показывает что человек ушёл или ещё здесь
-    - [ ] arrived
+    - [x] arrived
         мы приехали 
 
 - [ ] admin:
@@ -30,6 +30,8 @@
         изменить порядок треков в очереди
     - [ ] block user 
         заблокировать пользователя
+    - [ ] info about user ariv and left 
+        сообщать о подходе или уезеде пользователя
 
 - [ ] media messages:
     - [ ] photo

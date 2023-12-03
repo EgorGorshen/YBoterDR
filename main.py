@@ -11,28 +11,18 @@ telegram bot for parties, its functionality can be found in the README file
 import asyncio
 import logging
 import sys
-import os
-import dotenv
-from aiogram import Bot, Dispatcher
+
+from src.utils import dispatcher, bot
 from src.handlers.users import user_router
-
-# Load env from .env file
-dotenv.load_dotenv()
-TELEBOT_TOKEN = os.getenv("TELEBOT_TOKEN")
-
-# Checkout if token exists in .env file
-if TELEBOT_TOKEN is None:
-    sys.exit('ERROR: TELEBOT_TOKEN not found in ".env" file')
+from src.handlers.admin import admin_router
 
 
-async def run_bot():
-    """Initialize and run the telegram bot."""
-    # Create bot and dispatcher instances
-    bot = Bot(TELEBOT_TOKEN)
-    dispatcher = Dispatcher()
+async def init_routers():
+    """Initialize routers"""
 
     # Include routers for handling user interactions
     dispatcher.include_router(user_router)
+    dispatcher.include_router(admin_router)
 
     # Start polling bot
     await dispatcher.start_polling(bot)
@@ -46,7 +36,7 @@ def setup_logging():
 def main():
     """Main entry point for the bot."""
     setup_logging()
-    asyncio.run(run_bot())
+    asyncio.run(init_routers())
 
 
 if __name__ == "__main__":

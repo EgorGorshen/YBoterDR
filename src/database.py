@@ -46,8 +46,21 @@ class DataBase:
 
     def _delete_data(self):
         """Delete data from the database."""
-        # TODO: Implement this method if needed.
-        pass
+        # List of tables to be dropped
+        tables = [
+            "Users",
+            "Block",
+            "Media",
+            "Gifts",
+            "Tracks",
+            "Meal",
+            "Likes",
+        ]  # Add or modify according to your database schema
+
+        cursor = self.conn.cursor()
+        for table in tables:
+            cursor.execute(f"DROP TABLE IF EXISTS {table}")
+        self.conn.commit()
 
     # >>>>>>>>> user
 

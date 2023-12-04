@@ -26,7 +26,7 @@ class Gift:
 
 @dataclass
 class Track:
-    id: int
+    track_id: int
     name: str
     author: str
     number_of_calls: int = 0

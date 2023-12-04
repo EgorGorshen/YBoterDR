@@ -1,8 +1,8 @@
 # Assuming src.dataclasses contains a User class which is used by the DataBase class
 import pytest
 from faker import Faker
+
 from src.database import DataBase
-from src.dataclasses import Track
 
 
 @pytest.fixture(name="connection")
@@ -96,16 +96,35 @@ def test_block_user(connection: DataBase, faker_data: Faker):
     assert connection.is_block(tg_id=tg_id)
 
 
-def test_add_and_get_track(connection: DataBase, faker_data: Faker):
-    """Test for add and get track func"""
+def test_add_and_get_track_twice(connection: DataBase, faker_data: Faker):
+    """Test for adding and getting the same track twice."""
+    # Generate fake data
     name = faker_data.name()
     track_id = faker_data.random_int(min=0)
     author = faker_data.name()
-    returner = Track(0, name, author)
 
+    # First addition of the track
     connection.add_track(track_id, name, author)
+    first_retrieval = connection.get_track(track_id)
+    assert (
+        first_retrieval is not None
+    ), "Track should be found in the database after first addition"
+    assert first_retrieval.author == author, "Author should match after first addition"
+    assert first_retrieval.name == name, "Name should match after first addition"
+    assert (
+        first_retrieval.number_of_calls == 1
+    ), "Number of calls should be 1 after first addition"
 
-    get_track = connection.get_track(track_id)
-    assert get_track is not None
-    assert returner.author == get_track.author
-    assert returner.name == get_track.name
+    # Second addition of the same track
+    connection.add_track(track_id, name, author)
+    second_retrieval = connection.get_track(track_id)
+    assert (
+        second_retrieval is not None
+    ), "Track should be found in the database after second addition"
+    assert (
+        second_retrieval.author == author
+    ), "Author should match after second addition"
+    assert second_retrieval.name == name, "Name should match after second addition"
+    assert (
+        second_retrieval.number_of_calls == 2
+    ), "Number of calls should be incremented to 2 after second addition"

@@ -12,7 +12,10 @@
         если пользователю понравилось то он может добавить трек в избранное
     - [ ] delete
         удолить помледний свой трек из очереди
-    - [ ] find_track 
+    - [x] find_track 
+        - [ ] create sneapet
+            - [x] python
+            - [ ] c (FFmpeg)
         поиск трека и по нахождении его отправить снипет
     - [ ] toast
         когда человек хочет сказать тост, музыка начинает затухать
@@ -94,7 +97,7 @@ CREATE TABLE IF NOT EXISTS Likes (
 
 ## IDEAS
 
-1. 
+1. remake creating sneapet to FFmpeg (in c)
 
 ## LINKS
 
@@ -105,3 +108,4 @@ CREATE TABLE IF NOT EXISTS Likes (
 - [pytest-asyncio](https://tonybaloney.github.io/posts/async-test-patterns-for-pytest-and-unittest.html)
 - [Faker](https://pypi.org/project/Faker/)
 - [Ботостроение Telegram. Установка команд. Aiogram3 - полное руководство](https://www.youtube.com/watch?v=HRAzGBdwCkw&list=PLRU2Gs7fnCuiwcEDU0AWGkSTawEQpLFPb&index=4)
+- [C + FFmpeg + Raylib = High Quality Videos (YES! It IS that simple!)](https://www.youtube.com/watch?v=0To1aYglVHE)

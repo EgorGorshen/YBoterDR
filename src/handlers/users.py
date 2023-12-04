@@ -1,3 +1,5 @@
+from datetime import timedelta
+import os
 from aiogram import F, Bot, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
@@ -15,7 +17,7 @@ from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 from src.handlers.keyboards import TRUE_FALSE_KEYBOARD
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
-from src.utils import data_base, get_user_info_from_message
+from src.utils import create_video, data_base, get_user_info_from_message
 from src.yandex_api import (
     add_track_to_queue,
     find_track,
@@ -83,6 +85,9 @@ async def user_left(message: Message):
 
 @user_router.message(Command("find_track"))
 async def find_track_tg(message: Message, state: FSMContext):
+    if data_base.is_block(message.chat.id):
+        await message.answer("Простите, но произошла ошибка, попробуйте чуть позже")
+        return
     await message.answer("Введите запрос:")
     await state.set_state(FindTrack.get_request.state)
 
@@ -95,17 +100,23 @@ async def get_request(message: Message, state: FSMContext, request: str, bot: Bo
         await state.clear()
         return
 
-    audio_path, photo_path = await save_img_and_sneapet_of_track(
-        track.track_id
-    )  # TODO: remake to video path
+    audio_path, photo_path = await save_img_and_sneapet_of_track(track.track_id)
 
-    photo = FSInputFile(path=photo_path, filename=f"{track.name}.png")
+    video_path = create_video(photo_path, audio_path, track.track_id, 20)
+
+    if not os.path.exists(video_path):
+        await message.answer(
+            "Добавить трэк [{}({})] в очередь?".format(track.name, track.author)
+        )
+        return
+
+    video = FSInputFile(path=video_path, filename=f"{track.name}.mp4")
 
     await state.set_data(track.__dict__)
     await state.set_state(FindTrack.set_track.state)
-    await bot.send_photo(
+    await bot.send_video(
         message.chat.id,
-        photo=photo,
+        video=video,
         reply_markup=TRUE_FALSE_KEYBOARD,
         caption="Добавить трэк [{}({})] в очередь?".format(track.name, track.author),
     )
@@ -125,4 +136,9 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         else:
             pass  # WARNING:
 
+        await callback.message.delete()
+        await callback.message.answer(
+            "Трек [{}({})] Добавлен".format(data["name"], data["author"])
+        )
+        # TODO: inline со списком треков и при желании можно посмтреть инфу о них и лайкнуть
     await state.clear()

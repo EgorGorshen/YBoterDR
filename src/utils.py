@@ -1,9 +1,14 @@
 import os
 import sys
 import json
+import dotenv
+
+
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, BotCommand, BotCommandScopeDefault
-import dotenv
+from moviepy.editor import ImageClip, AudioFileClip
+
+
 from src.database import DataBase
 
 
@@ -70,3 +75,26 @@ async def set_user_commands():
     ]
 
     await bot.set_my_commands(command_list, BotCommandScopeDefault())
+
+
+def create_video(image_path, audio_path, track_id, duration):
+    """
+    Creates a video from a given image and audio track.
+
+    :param image_path: Path to the image file.
+    :param audio_path: Path to the audio file.
+    :param track_id: Identifier for the track, used for naming the output file.
+    :param duration: Duration of the video in seconds.
+    :return: Path to the created video file.
+    """
+    output_path = f"/tmp/y_boter_dr/snipet/{track_id}.mp4"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    if os.path.exists(output_path):
+        return output_path
+    image_clip = ImageClip(image_path).set_duration(duration)
+    audio_clip = AudioFileClip(audio_path).subclip(0, duration)
+    video_clip = image_clip.set_fps(24).set_audio(audio_clip)
+    video_clip.write_videofile(output_path, codec="libx264")
+
+    return output_path

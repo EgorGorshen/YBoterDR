@@ -149,10 +149,17 @@ class DataBase:
         track = self.get_track(track_id)
 
         # check out if treck exists
-        if track is not None:
-            return  # TODO: if track was found ++number_of_calls
-
         cursor = self.conn.cursor()
+
+        if track is not None:
+            cursor.execute(
+                "UPDATE Tracks SET number_of_calls = ? WHERE id = ?",
+                (track.number_of_calls + 1, track.track_id),
+            )
+            # TODO: set on the queue
+            self.conn.commit()
+            return
+
         cursor.execute(
             "INSERT INTO Tracks(id, name, author, number_of_calls) VALUES(?, ?, ?, ?)",
             (track_id, name, author, 1),

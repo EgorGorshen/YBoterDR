@@ -1,6 +1,12 @@
-from aiogram import F, Router
+from aiogram import F, Bot, Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InputFile,
+    InputMediaPhoto,
+    Message,
+)
 from aiogram.fsm.context import FSMContext
 
 from src.dataclasses import Track
@@ -10,7 +16,12 @@ from src.handlers.keyboards import TRUE_FALSE_KEYBOARD
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
 from src.utils import data_base, get_user_info_from_message
-from src.yandex_api import add_track_to_queue, find_track, add_track_to_queue
+from src.yandex_api import (
+    add_track_to_queue,
+    find_track,
+    add_track_to_queue,
+    save_img_and_sneapet_of_track,
+)
 
 
 user_router = Router()
@@ -77,18 +88,26 @@ async def find_track_tg(message: Message, state: FSMContext):
 
 
 @user_router.message(FindTrack.get_request, F.text.as_("request"))
-async def get_request(message: Message, state: FSMContext, request: str):
+async def get_request(message: Message, state: FSMContext, request: str, bot: Bot):
     track: Track | None = await find_track(request)
     if track is None:
         await message.answer("По вашему запросу ничего не найдено")
         await state.clear()
         return
 
+    audio_path, photo_path = await save_img_and_sneapet_of_track(
+        track.track_id
+    )  # TODO: remake to video path
+
+    photo = FSInputFile(path=photo_path, filename=f"{track.name}.png")
+
     await state.set_data(track.__dict__)
     await state.set_state(FindTrack.set_track.state)
-    await message.answer(
-        "Добавить трэк [{}({})] в очередь?".format(track.name, track.author),
+    await bot.send_photo(
+        message.chat.id,
+        photo=photo,
         reply_markup=TRUE_FALSE_KEYBOARD,
+        caption="Добавить трэк [{}({})] в очередь?".format(track.name, track.author),
     )
 
 

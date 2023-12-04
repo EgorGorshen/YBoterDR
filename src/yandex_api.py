@@ -4,15 +4,19 @@ from aiogram.types import Video
 
 from yandex_music import Album, Artist, ClientAsync, Playlist, Track
 from yandex_music.utils.request_async import NotFoundError
+from src.logger import Logger
 
 from src.utils import YANDEX_TOKEN
 from src.dataclasses import Track as TrackDBType
 
 
+yandex_api_log = Logger("yandex_api_log", "log/yandex_api.log")
+
 if YANDEX_TOKEN is None:
     sys.exit('ERROR: YANDEX_API_TOKEN not found in ".env" file')
 
 
+@yandex_api_log.log_function_call
 async def find_track(request: str):
     """found tracks etc"""
     client = await ClientAsync(YANDEX_TOKEN).init()
@@ -57,6 +61,8 @@ async def save_img_and_sneapet_of_track(track_id: int):
         raise NotFoundError("ERROR: track not found")
 
     track = search_res.pop()
+    audio_path = f"/tmp/y_boter_dr/tracks/{track_id}.mp3"
+    photo_path = f"/tmp/y_boter_dr/cover/{track_id}.png"
 
     if not os.path.exists("/tmp/y_boter_dr"):
         os.mkdir("/tmp/y_boter_dr")
@@ -67,11 +73,15 @@ async def save_img_and_sneapet_of_track(track_id: int):
     if not os.path.exists("/tmp/y_boter_dr/cover"):
         os.mkdir("/tmp/y_boter_dr/cover")
 
-    if not os.path.exists(f"/tmp/y_boter_dr/tracks/{id}.mp3"):
-        await track.download_async(filename=f"/tmp/y_boter_dr/tracks/{id}.mp3")
+    if not os.path.exists(f"/tmp/y_boter_dr/tracks/{track_id}.mp3"):
+        await track.download_async(filename=f"/tmp/y_boter_dr/tracks/{track_id}.mp3")
 
-    if not os.path.exists(f"/tmp/y_boter_dr/cover/{id}.png"):
-        await track.download_cover_async(filename=f"/tmp/y_boter_dr/cover/{id}.png")
+    if not os.path.exists(f"/tmp/y_boter_dr/cover/{track_id}.png"):
+        await track.download_cover_async(
+            filename=f"/tmp/y_boter_dr/cover/{track_id}.png"
+        )
+
+    return audio_path, photo_path
 
 
 async def add_track_to_queue(track: TrackDBType):

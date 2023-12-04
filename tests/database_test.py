@@ -99,12 +99,13 @@ def test_block_user(connection: DataBase, faker_data: Faker):
 def test_add_and_get_track(connection: DataBase, faker_data: Faker):
     """Test for add and get track func"""
     name = faker_data.name()
+    track_id = faker_data.random_int(min=0)
     author = faker_data.name()
     returner = Track(0, name, author)
 
-    connection.add_track(name, author)
+    connection.add_track(track_id, name, author)
 
-    get_track = connection.get_track(name, author)
+    get_track = connection.get_track(track_id)
     assert get_track is not None
     assert returner.author == get_track.author
     assert returner.name == get_track.name

@@ -144,27 +144,27 @@ class DataBase:
         return True
 
     # >>>>>>>>> tracks
-    def add_track(self, name: str, author: str):
+    def add_track(self, track_id: int, name: str, author: str):
         """add track to db"""
-        track = self.get_track(name, author)
+        track = self.get_track(track_id)
 
         # check out if treck exists
         if track is not None:
-            return
+            return  # TODO: if track was found ++number_of_calls
 
         cursor = self.conn.cursor()
         cursor.execute(
-            "INSERT INTO Tracks(name, author, number_of_calls) VALUES(?, ?, ?)",
-            (name, author, 1),
+            "INSERT INTO Tracks(id, name, author, number_of_calls) VALUES(?, ?, ?, ?)",
+            (track_id, name, author, 1),
         )
         self.conn.commit()
 
-    def get_track(self, name: str, author: str) -> Track | None:
+    def get_track(self, track_id: int) -> Track | None:
         """get track from database"""
         cursor = self.conn.cursor()
         cursor.execute(
-            "SELECT * FROM Tracks WHERE name = ? AND author = ? ",
-            (name, author),
+            "SELECT * FROM Tracks WHERE id = ?",
+            (track_id,),
         )
 
         track = cursor.fetchone()

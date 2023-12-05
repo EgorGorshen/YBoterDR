@@ -5,8 +5,6 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     CallbackQuery,
     FSInputFile,
-    InputFile,
-    InputMediaPhoto,
     Message,
 )
 from aiogram.fsm.context import FSMContext
@@ -126,7 +124,9 @@ async def get_request(message: Message, state: FSMContext, request: str, bot: Bo
 async def set_track(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     if callback.message is None:
-        return  # WARNING:
+        return
+
+    await callback.message.delete()
 
     if callback.data == "true":
         data_base.add_track(data["track_id"], data["name"], data["author"])
@@ -134,11 +134,19 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         if track is not None:
             await add_track_to_queue(track)
         else:
-            pass  # WARNING:
+            await callback.message.answer(
+                "Простите произошла ошибка, попробуде найти трек ещё раз"
+            )
+            return
 
-        await callback.message.delete()
         await callback.message.answer(
             "Трек [{}({})] Добавлен".format(data["name"], data["author"])
         )
         # TODO: inline со списком треков и при желании можно посмтреть инфу о них и лайкнуть
+
+    if callback.data == "false":
+        await callback.message.answer(
+            "Ладно попробуй ввести запрос по точней?", reply_markup=TRUE_FALSE_KEYBOARD
+        )
+
     await state.clear()

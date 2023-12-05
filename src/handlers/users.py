@@ -1,4 +1,3 @@
-from datetime import timedelta
 import os
 from aiogram import F, Bot, Router
 from aiogram.filters import Command, CommandStart
@@ -8,7 +7,6 @@ from aiogram.types import (
     Message,
 )
 from aiogram.fsm.context import FSMContext
-from yandex_music import Album
 
 from src.dataclasses import Track
 from src.handlers.FSMachine import FindTrack
@@ -92,93 +90,73 @@ async def find_track_tg(message: Message, state: FSMContext):
     await state.set_state(FindTrack.get_request.state)
 
 
-@user_router.message(FindTrack.get_request, F.text.as_("request"))
-async def get_request(message: Message, state: FSMContext, request: str, bot: Bot):
-    searck_res: Track | list[Track] | None = await find_track(request)
-    if searck_res is None:
-        await message.answer("По вашему запросу ничего не найдено")
-        await state.clear()
-        return
-
-    if isinstance(searck_res, list) and isinstance(searck_res[0], Track):
-        await message.answer(
-            "Мы не сумел подобрать определённый трек,\
-                попробуй выбрать сам:",
-            reply_markup=CHOOSE_TRACK_KEYBOARD(searck_res),
-        )
-        await state.set_data(searck_res.__dict__)
-        await state.set_state(FindTrack.choose_track)
-        return
-
-    audio_path, photo_path = await save_img_and_sneapet_of_track(searck_res.track_id)
-
-    video_path = create_video(photo_path, audio_path, searck_res.track_id, 20)
-
+async def send_track_info(message, track, state, bot):
+    """send track info (snipets)"""
+    video_path = await create_video_for_track(track)
     if not os.path.exists(video_path):
-        await message.answer(
-            "Добавить трэк [{}({})] в очередь?".format(
-                searck_res.name, searck_res.author
-            )
-        )
+        await message.answer(f"Добавить трэк [{track.name}({track.author})] в очередь?")
         return
 
-    video = FSInputFile(path=video_path, filename=f"{searck_res.name}.mp4")
-
-    await state.set_data(searck_res.__dict__)
+    video = FSInputFile(path=video_path, filename=f"{track.name}.mp4")
+    await state.set_data(track.__dict__)
     await state.set_state(FindTrack.set_track.state)
     await bot.send_video(
         message.chat.id,
         video=video,
         reply_markup=TRUE_FALSE_KEYBOARD,
-        caption="Добавить трэк [{}({})] в очередь?".format(
-            searck_res.name, searck_res.author
-        ),
+        caption=f"Добавить трэк [{track.name}({track.author})] в очередь?",
     )
+
+
+async def create_video_for_track(track):
+    """create snipets"""
+    audio_path, photo_path = await save_img_and_sneapet_of_track(track.track_id)
+    return create_video(photo_path, audio_path, track.track_id, 20)
+
+
+@user_router.message(FindTrack.get_request, F.text.as_("request"))
+async def get_request(message: Message, state: FSMContext, request: str, bot: Bot):
+    """Get request from request"""
+    search_res = await find_track(request)
+    if search_res is None:
+        await message.answer("По вашему запросу ничего не найдено")
+        await state.clear()
+        return
+
+    if isinstance(search_res, list):
+        await message.answer(
+            "Выберите трек:", reply_markup=CHOOSE_TRACK_KEYBOARD(search_res)
+        )
+        await state.set_data(search_res.__dict__)
+        await state.set_state(FindTrack.choose_track)
+        return
+
+    await send_track_info(message, search_res, state, bot)
 
 
 @user_router.callback_query(FindTrack.choose_track, F.data.as_("id_of_track"))
 async def choose_track(
     callback: CallbackQuery, state: FSMContext, id_of_track: str, bot: Bot
 ):
+    """choose track from list of tracks"""
     if callback.message is None:
         return
 
-    if id_of_track.isalnum():
-        track_id = int(id_of_track)
-    else:
+    if not id_of_track.isalnum():
         await callback.message.delete()
         await callback.message.answer(
-            "Простите произошла ошибка с получением трека... попробуйте найти его по названию"
+            "Ошибка при получении трека... попробуйте по названию"
         )
         await state.clear()
         return
 
-    track = await get_track_by_id(track_id)
-
-    audio_path, photo_path = await save_img_and_sneapet_of_track(track.track_id)
-
-    video_path = create_video(photo_path, audio_path, track.track_id, 20)
-
-    if not os.path.exists(video_path):
-        await callback.message.answer(
-            "Добавить трэк [{}({})] в очередь?".format(track.name, track.author)
-        )
-        return
-
-    video = FSInputFile(path=video_path, filename=f"{track.name}.mp4")
-
-    await state.set_data(track.__dict__)
-    await state.set_state(FindTrack.set_track.state)
-    await bot.send_video(
-        callback.message.chat.id,
-        video=video,
-        reply_markup=TRUE_FALSE_KEYBOARD,
-        caption="Добавить трэк [{}({})] в очередь?".format(track.name, track.author),
-    )
+    track = await get_track_by_id(int(id_of_track))
+    await send_track_info(callback.message, track, state, bot)
 
 
 @user_router.callback_query(FindTrack.set_track)
 async def set_track(callback: CallbackQuery, state: FSMContext):
+    """ser track to queue"""
     data = await state.get_data()
     if callback.message is None:
         return

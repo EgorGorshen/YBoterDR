@@ -84,6 +84,23 @@ async def save_img_and_sneapet_of_track(track_id: int):
     return audio_path, photo_path
 
 
+async def get_track_by_id(track_id: int):
+    """Get track by yandex id"""
+    client = await ClientAsync(YANDEX_TOKEN).init()
+    search_res = await client.tracks(track_id)
+
+    if search_res is None:
+        raise NotFoundError("ERROR: track not found")
+
+    track = search_res.pop()
+
+    return TrackDBType(
+        track_id,
+        track.title if track.title is not None else "(Без названия)",
+        ", ".join(track.artists_name()),
+    )
+
+
 async def add_track_to_queue(track: TrackDBType):
     """add track to alise queue"""
     return track

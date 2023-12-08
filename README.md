@@ -104,3 +104,5 @@ CREATE TABLE IF NOT EXISTS Likes (
 - [test data mockaroo](https://www.mockaroo.com)
 - [pytest-asyncio](https://tonybaloney.github.io/posts/async-test-patterns-for-pytest-and-unittest.html)
 - [Faker](https://pypi.org/project/Faker/)
+- [C/C++ из Python (ctypes)](https://habr.com/ru/articles/466499/)
+- [FFmpeg ч. 5 Делаем видео из картинок, текста и музыки](https://www.youtube.com/watch?v=fBdx0S0EPm4)

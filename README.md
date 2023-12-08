@@ -109,3 +109,5 @@ CREATE TABLE IF NOT EXISTS Likes (
 - [Faker](https://pypi.org/project/Faker/)
 - [Ботостроение Telegram. Установка команд. Aiogram3 - полное руководство](https://www.youtube.com/watch?v=HRAzGBdwCkw&list=PLRU2Gs7fnCuiwcEDU0AWGkSTawEQpLFPb&index=4)
 - [C + FFmpeg + Raylib = High Quality Videos (YES! It IS that simple!)](https://www.youtube.com/watch?v=0To1aYglVHE)
+- [C/C++ из Python (ctypes)](https://habr.com/ru/articles/466499/)
+- [FFmpeg ч. 5 Делаем видео из картинок, текста и музыки](https://www.youtube.com/watch?v=fBdx0S0EPm4)

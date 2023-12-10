@@ -6,8 +6,6 @@
     - [x] start:
         - [x] welcome message
         - [x] open menu
-    - [ ] add_track_queue
-        добавлять трек в очередь [command] [track name]
     - [ ] like
         если пользователю понравилось то он может добавить трек в избранное
     - [ ] delete
@@ -16,6 +14,7 @@
         - [ ] create sneapet
             - [x] python
             - [ ] c (FFmpeg)
+        - [ ] add track to queue
         поиск трека и по нахождении его отправить снипет
     - [ ] toast
         когда человек хочет сказать тост, музыка начинает затухать

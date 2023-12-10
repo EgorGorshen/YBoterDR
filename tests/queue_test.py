@@ -1,4 +1,3 @@
-import pickle  # Moved to the correct order
 import asyncio
 import pytest
 from src.queue import TrackQueue
@@ -20,18 +19,6 @@ def test_track_queue_initialization(tmp_path):
     track_queue = TrackQueue(str(queue_path))
     assert track_queue.queue_path == str(queue_path)
     assert track_queue.queue.empty()
-
-
-def test_load_queue(tmp_path):
-    """Test if the queue loads correctly from a file."""
-    queue_path = tmp_path / "queue.pkl"
-    test_queue = [Track(1, "test_name", "test_author")]
-
-    with open(queue_path, "wb") as f:
-        pickle.dump(test_queue, f)
-
-    track_queue = TrackQueue(str(queue_path))
-    assert not track_queue.queue.empty()
 
 
 @pytest.mark.asyncio

@@ -13,11 +13,9 @@ from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 from src.handlers.keyboards import CHOOSE_TRACK_KEYBOARD, TRUE_FALSE_KEYBOARD
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
-from src.utils import create_video, data_base, get_user_info_from_message
+from src.utils import create_video, data_base, get_user_info_from_message, track_queue
 from src.yandex_api import (
-    add_track_to_queue,
     find_track,
-    add_track_to_queue,
     get_track_by_id,
     save_img_and_sneapet_of_track,
 )
@@ -166,7 +164,7 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         data_base.add_track(data["track_id"], data["name"], data["author"])
         track = data_base.get_track(data["track_id"])
         if track is not None:
-            await add_track_to_queue(track)
+            await track_queue.put(track)
         else:
             await callback.message.answer(
                 "Простите произошла ошибка, попробуде найти трек ещё раз"
@@ -176,11 +174,11 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(
             "Трек [{}({})] Добавлен".format(data["name"], data["author"])
         )
-        # TODO: inline со списком треков и при желании можно посмтреть инфу о них и лайкнуть
 
     if callback.data == "false":
         await callback.message.answer(
-            "Ладно попробуй ввести запрос по точней?", reply_markup=TRUE_FALSE_KEYBOARD
+            "Ладно, попробуй ввести запрос по точней: /find_track"
         )
+    print(await track_queue.get())
 
     await state.clear()

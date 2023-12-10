@@ -99,8 +99,3 @@ async def get_track_by_id(track_id: int):
         track.title if track.title is not None else "(Без названия)",
         ", ".join(track.artists_name()),
     )
-
-
-async def add_track_to_queue(track: TrackDBType):
-    """add track to alise queue"""
-    return track

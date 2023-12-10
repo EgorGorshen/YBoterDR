@@ -3,16 +3,16 @@ import sys
 import json
 import dotenv
 
-
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message, BotCommand, BotCommandScopeDefault
 from moviepy.editor import ImageClip, AudioFileClip
 
-
 from src.database import DataBase
+from src.queue import TrackQueue
 
 
 data_base = DataBase("sqlite.db")
+track_queue = TrackQueue("/tmp/y_boter_dr/tracks.queue")
 # Load env from .env file
 dotenv.load_dotenv()
 

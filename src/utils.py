@@ -38,7 +38,12 @@ dispatcher = Dispatcher()
 
 
 async def get_user_info_from_message(message: Message) -> tuple[int, str] | None:
-    """get && checkout user info from message"""
+    """
+    get && checkout user info from message
+
+    :param message: tg message
+    :return: tuple with user id and his full name
+    """
     from_user = message.from_user
     chat_id = message.chat.id
     if from_user is None:
@@ -87,6 +92,7 @@ def create_video(image_path, audio_path, track_id, duration):
     :param duration: Duration of the video in seconds.
     :return: Path to the created video file.
     """
+    # TODO: rewrite to ffmpeg
     output_path = f"/tmp/y_boter_dr/snipet/{track_id}.mp4"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 

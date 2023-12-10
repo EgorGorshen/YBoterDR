@@ -110,7 +110,7 @@ class DataBase:
         self.conn.commit()
 
     def delete_block(self, tg_id: int):
-        """Removes the user's lock."""
+        """Removes the user's block."""
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM Block WHERE user_id = ?", (tg_id,))
         self.conn.commit()
@@ -145,7 +145,13 @@ class DataBase:
 
     # >>>>>>>>> tracks
     def add_track(self, track_id: int, name: str, author: str):
-        """add track to db"""
+        """
+        add track to db
+
+        :param track_id: yandex id of track
+        :param name: track title (name)
+        :param author: author name
+        """
         track = self.get_track(track_id)
 
         # check out if treck exists
@@ -156,7 +162,7 @@ class DataBase:
                 "UPDATE Tracks SET number_of_calls = ? WHERE id = ?",
                 (track.number_of_calls + 1, track.track_id),
             )
-            # TODO: set on the queue
+            # TODO: set on the queue && checkout if track in queue
             self.conn.commit()
             return
 
@@ -167,7 +173,11 @@ class DataBase:
         self.conn.commit()
 
     def get_track(self, track_id: int) -> Track | None:
-        """get track from database"""
+        """
+        get track from database
+        :param track_id: yandex id of track
+        :return: Track if was found
+        """
         cursor = self.conn.cursor()
         cursor.execute(
             "SELECT * FROM Tracks WHERE id = ?",

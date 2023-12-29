@@ -11,10 +11,10 @@
     - [ ] delete
         удолить помледний свой трек из очереди
     - [x] find_track 
-        - [ ] create sneapet
+        - [x] create sneapet
             - [x] python
             - [ ] c (FFmpeg)
-        - [ ] add track to queue
+        - [x] add track to queue
         поиск трека и по нахождении его отправить снипет
     - [ ] toast
         когда человек хочет сказать тост, музыка начинает затухать

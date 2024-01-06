@@ -11,14 +11,13 @@ from src.database import DataBase
 from src.queue import TrackQueue
 
 
-data_base = DataBase("sqlite.db")
-track_queue = TrackQueue("/tmp/y_boter_dr/tracks.queue")
 # Load env from .env file
 dotenv.load_dotenv()
 
 TELEBOT_TOKEN = os.getenv("TELEBOT_TOKEN")
 ADMINS_IDS = os.getenv("ADMINS_IDS")
 YANDEX_TOKEN = os.getenv("YANDEX_API_TOKEN")
+TMP_PATH = os.getenv("TMP_PATH")
 
 # Checkout if token exists in .env file
 if TELEBOT_TOKEN is None:
@@ -30,11 +29,16 @@ if ADMINS_IDS is None:
 if YANDEX_TOKEN is None:
     sys.exit('ERROR: YANDEX_API_TOKEN not found in ".env" file')
 
+if TMP_PATH is None:
+    sys.exit('ERROR: TMP_PATH not found in ".env" file')
+
 ADMINS_IDS = json.loads(ADMINS_IDS)
 
 # Create bot and dispatcher instances
 bot = Bot(TELEBOT_TOKEN)
 dispatcher = Dispatcher()
+data_base = DataBase("sqlite.db")
+track_queue = TrackQueue(os.path.join(TMP_PATH, "track.queue"))
 
 
 async def get_user_info_from_message(message: Message) -> tuple[int, str] | None:
@@ -93,7 +97,7 @@ def create_video(image_path, audio_path, track_id, duration):
     :return: Path to the created video file.
     """
     # TODO: rewrite to ffmpeg
-    output_path = f"/tmp/y_boter_dr/snipet/{track_id}.mp4"
+    output_path = os.path.join(TMP_PATH, f"snipet/{track_id}.mp4")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     if os.path.exists(output_path):

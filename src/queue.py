@@ -34,6 +34,7 @@ class TrackQueue:
         save queue to tmp file
         """
         with open(self.queue_path, "wb") as f:
+            print(self.queue)
             pickle.dump(self.queue, f)
 
     def _load(self):
@@ -43,6 +44,7 @@ class TrackQueue:
         if os.path.exists(self.queue_path):
             with open(self.queue_path, "rb") as f:
                 loaded_queue_contents = pickle.load(f)
+                print(loaded_queue_contents, "Done")
                 self.queue = loaded_queue_contents
 
     @_save_load_dec

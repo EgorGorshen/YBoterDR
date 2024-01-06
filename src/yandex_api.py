@@ -6,7 +6,7 @@ from yandex_music import Album, Artist, ClientAsync, Playlist, Track
 from yandex_music.utils.request_async import NotFoundError
 from src.logger import Logger
 
-from src.utils import YANDEX_TOKEN
+from src.utils import TMP_PATH, YANDEX_TOKEN
 from src.dataclasses import Track as TrackDBType
 
 
@@ -54,6 +54,9 @@ async def find_track(request: str):
 
 async def save_img_and_sneapet_of_track(track_id: int):
     """save img and audio"""
+    if TMP_PATH is None:
+        sys.exit('ERROR: TMP_PATH not found in ".env" file')
+
     client = await ClientAsync(YANDEX_TOKEN).init()
     search_res = await client.tracks(track_id)
 
@@ -61,27 +64,23 @@ async def save_img_and_sneapet_of_track(track_id: int):
         raise NotFoundError("ERROR: track not found")
 
     track = search_res.pop()
-    audio_path = f"/tmp/y_boter_dr/tracks/{track_id}.mp3"
-    photo_path = f"/tmp/y_boter_dr/cover/{track_id}.png"
+    audio_path = os.path.join(TMP_PATH, "tracks")  # /{track_id}.mp3
+    photo_path = os.path.join(TMP_PATH, "cover")  # /{track_id}.png
 
-    if not os.path.exists("/tmp/y_boter_dr"):
-        os.mkdir("/tmp/y_boter_dr")
+    os.makedirs(audio_path, exist_ok=True)
+    os.makedirs(photo_path, exist_ok=True)
 
-    if not os.path.exists("/tmp/y_boter_dr/tracks"):
-        os.mkdir("/tmp/y_boter_dr/tracks")
+    if not os.path.exists(os.path.join(audio_path, f"{track_id}.mp3")):
+        await track.download_async(filename=os.path.join(audio_path, f"{track_id}.mp3"))
 
-    if not os.path.exists("/tmp/y_boter_dr/cover"):
-        os.mkdir("/tmp/y_boter_dr/cover")
-
-    if not os.path.exists(f"/tmp/y_boter_dr/tracks/{track_id}.mp3"):
-        await track.download_async(filename=f"/tmp/y_boter_dr/tracks/{track_id}.mp3")
-
-    if not os.path.exists(f"/tmp/y_boter_dr/cover/{track_id}.png"):
+    if not os.path.exists(os.path.join(photo_path, f"{track_id}.png")):
         await track.download_cover_async(
-            filename=f"/tmp/y_boter_dr/cover/{track_id}.png"
+            filename=os.path.join(photo_path, f"{track_id}.png")
         )
 
-    return audio_path, photo_path
+    return os.path.join(audio_path, f"{track_id}.mp3"), os.path.join(
+        photo_path, f"{track_id}.png"
+    )
 
 
 async def get_track_by_id(track_id: int):

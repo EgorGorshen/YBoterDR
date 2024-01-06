@@ -31,6 +31,9 @@ class Track:
     author: str
     number_of_calls: int = 0
 
+    def track_path(self) -> str:
+        return ""
+
 
 @dataclass
 class Block:

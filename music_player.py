@@ -42,6 +42,10 @@ class Player:
         pass
 
     def _get_status(self):
+        if not os.path.exists(self.status_path):
+            with open(self.status_path, "w") as file:
+                file.write("play")
+
         with open(self.status_path, "r") as file:
             status = file.read().lower().split()
             match status:

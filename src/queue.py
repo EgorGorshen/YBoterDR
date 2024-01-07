@@ -1,22 +1,50 @@
-import asyncio
 import functools
 import os
 import pickle
 
 from src.dataclasses import Track
+from src.logger import Logger
+
+
+track_log = Logger("track_log", "log/track.log")
 
 
 def _save_load_dec(func):
     @functools.wraps(func)
-    async def wrapper(cls, *args, **kwargs):
+    def wrapper(cls, *args, **kwargs):
         cls._load()
-        result = await func(cls, *args, **kwargs)
+        result = func(cls, *args, **kwargs)
         cls._save()
         return result
 
     return wrapper
 
 
+class Queue:
+    """Queue class"""
+
+    def __init__(self) -> None:
+        """init queue"""
+        self._queue = []
+
+    def get(self):
+        """get object from queue"""
+        if len(self._queue) == 0:
+            return None
+        return self._queue.pop(0)
+
+    def put(self, obj):
+        """put object to queue"""
+        self._queue.append(obj)
+
+    def __str__(self) -> str:
+        if len(self._queue) == 0:
+            return "Queue<None>(len=0)"
+
+        return f"Queue{type(self._queue[0])}(len={len(self._queue)})"
+
+
+@track_log.class_log
 class TrackQueue:
     """Track queue"""
 
@@ -25,7 +53,7 @@ class TrackQueue:
         init track queue
         :queue_path: tmp path to queue
         """
-        self.queue = asyncio.Queue()
+        self.queue = Queue()
         self.queue_path = queue_path
         self._load()
 
@@ -34,7 +62,6 @@ class TrackQueue:
         save queue to tmp file
         """
         with open(self.queue_path, "wb") as f:
-            print(self.queue)
             pickle.dump(self.queue, f)
 
     def _load(self):
@@ -44,19 +71,24 @@ class TrackQueue:
         if os.path.exists(self.queue_path):
             with open(self.queue_path, "rb") as f:
                 loaded_queue_contents = pickle.load(f)
-                print(loaded_queue_contents, "Done")
                 self.queue = loaded_queue_contents
 
     @_save_load_dec
-    async def get(self):
+    def get(self):
         """
         get next track
         """
-        return await self.queue.get()
+        return self.queue.get()
 
     @_save_load_dec
-    async def put(self, track: Track):
+    def put(self, track: Track):
         """
         put next track to queue
         """
-        await self.queue.put(track)
+        self.queue.put(track)
+
+    def empty(self):
+        """
+        make queue empty
+        """
+        self.queue = Queue()

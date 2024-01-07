@@ -17,10 +17,10 @@ db_log = Logger("db_log", "log/db.log")
 class DataBase:
     """DataBase class to work with a telegram database using sqlite3."""
 
-    def __init__(self, database_path: str = ":memory:"):
+    def __init__(self, database_path: str = ":memory:", develop: bool = True):
         """init DataBase class"""
         self.database_path: str = database_path
-        self.develop: bool = True
+        self.develop: bool = develop
         self.conn: sqlite3.Connection = sqlite3.connect(database_path)
         if self.develop:
             if os.path.exists(database_path):

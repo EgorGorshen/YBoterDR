@@ -10,7 +10,7 @@ import os
 # Функция для проверки файла статуса
 def should_skip_track(status_file_path):
     try:
-        with open(status_file_path, "r") as file:
+        with open(status_file_path, "r", encoding='utf-8') as file:
             status = file.read().strip()
             return status.lower() == "skip"
     except FileNotFoundError:

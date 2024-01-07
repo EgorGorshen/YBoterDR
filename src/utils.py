@@ -18,6 +18,7 @@ TELEBOT_TOKEN = os.getenv("TELEBOT_TOKEN")
 ADMINS_IDS = os.getenv("ADMINS_IDS")
 YANDEX_TOKEN = os.getenv("YANDEX_API_TOKEN")
 TMP_PATH = os.getenv("TMP_PATH")
+DEVELOP = os.getenv("DEVELOP")
 
 # Checkout if token exists in .env file
 if TELEBOT_TOKEN is None:
@@ -32,13 +33,25 @@ if YANDEX_TOKEN is None:
 if TMP_PATH is None:
     sys.exit('ERROR: TMP_PATH not found in ".env" file')
 
+
 ADMINS_IDS = json.loads(ADMINS_IDS)
 
 # Create bot and dispatcher instances
 bot = Bot(TELEBOT_TOKEN)
 dispatcher = Dispatcher()
-data_base = DataBase("sqlite.db")
+
 track_queue = TrackQueue(os.path.join(TMP_PATH, "track.queue"))
+STATUS_PATH = os.path.join(TMP_PATH, "status")
+
+data_base = (
+    DataBase("sqlite.db", False)
+    if DEVELOP is None
+    else (
+        DataBase("sqlite.db", True)
+        if DEVELOP.lower() == "true"
+        else DataBase("sqlite.db", False)
+    )
+)
 
 
 async def get_user_info_from_message(message: Message) -> tuple[int, str] | None:
@@ -108,3 +121,33 @@ def create_video(image_path, audio_path, track_id, duration):
     video_clip.write_videofile(output_path, codec="libx264")
 
     return output_path
+
+
+def set_status(staus: str):
+    """set staus in STATUS_PATH file"""
+    with open(STATUS_PATH, "w", encoding="utf-8") as file:
+        file.write(staus)
+
+
+def get_status() -> str:
+    """get status from STATUS_PATH file"""
+    if not os.path.exists(STATUS_PATH):
+        return "play"
+    with open(STATUS_PATH, "r", encoding="utf-8") as file:
+        return file.read()
+
+
+def get_volume() -> int:
+    """
+    Returns the current volume level on a Mac.
+    """
+    try:
+        volume = (
+            os.popen("osascript -e 'output volume of (get volume settings)'")
+            .read()
+            .strip()
+        )
+        return int(volume)
+    except ValueError:
+        # Handle the case where the volume could not be parsed to an integer
+        return 30

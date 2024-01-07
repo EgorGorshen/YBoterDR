@@ -2,7 +2,7 @@ import os
 import platform
 import time
 
-from typing import Literal
+from src.utils import get_volume
 
 
 class VolumeController:
@@ -15,38 +15,35 @@ class VolumeController:
         """
         self.duration = duration
 
-    def change_volume(self, value: int, action: Literal["louder"] | Literal["husher"]):
+    def change_volume(self, value: int):
         """
-        changing the sound depending on the operating system
-        :volume: delta for volume
-        :action: louder or husher
+        changing the sound to a specific volume depending on the operating system
+        :value: target volume
         """
         os_name = platform.system()
 
         match os_name:
             case "Darwin":
-                self._change_volume_mac(value, action)
+                self._set_volume_mac(value)
             case _:
                 print("ERROR: OS не найдена")
 
-    def _change_volume_mac(
-        self, value: int, action: Literal["louder"] | Literal["husher"]
-    ):
-        """changing the sound on the mac"""
-        steps = 50
+    def _set_volume_mac(self, value: int):
+        """Set the sound on the Mac to a specific volume"""
+        current_volume = self._get_current_volume_mac()
+        steps = 10
         step_duration = self.duration / steps
-        for i in range(steps + 1):
-            volume_step = value * i / steps
-            os.system(
-                f"osascript -e \"set volume output volume ((output volume of (get volume settings))\
-                        {'-' if action == 'husher' else '+'} {volume_step * 100})\""
-            )
+        delta = (value - current_volume) / steps
+
+        for i in range(1, steps + 1):
+            volume_step = current_volume + delta * i
+            os.system(f"osascript -e 'set volume output volume {volume_step}'")
             time.sleep(step_duration)
 
-    def louder(self, value: int):
-        """wrapper for change_volume(..., 'louder')"""
-        self.change_volume(value, "louder")
+    def _get_current_volume_mac(self) -> int:
+        """Get the current volume level on Mac"""
+        return get_volume()
 
-    def husher(self, value: int):
-        """wrapper for change_volume(..., 'husher')"""
-        self.change_volume(value, "husher")
+    def set_volume(self, value: int):
+        """wrapper for change_volume"""
+        self.change_volume(value)

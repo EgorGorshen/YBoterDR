@@ -10,6 +10,7 @@ def db_connection():
     """Get db connection"""
     # Initialize the database connection
     data = DataBase()
+
     yield data
     # Close the database connection after the test
     data.close()

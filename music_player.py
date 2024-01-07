@@ -9,8 +9,7 @@ from typing import NoReturn
 from src.queue import TrackQueue
 from src.dataclasses import Track
 from src.volume_controller import VolumeController
-
-from src.utils import TMP_PATH, track_queue
+from src.utils import STATUS_PATH, TMP_PATH, get_status, set_status, track_queue
 
 
 if TMP_PATH is None:
@@ -20,8 +19,6 @@ if TMP_PATH is None:
 class Status(Enum):
     PLAY = 0
     NEXT = 1
-    LOUDER = 2
-    HUSHER = 3
     TOAST = 4
 
 
@@ -35,38 +32,35 @@ class Player:
         self.queue: TrackQueue = TrackQueue(self.queue_path)
         self.volume_controller = VolumeController()
 
-    async def next(self) -> Track:
-        return await track_queue.get()
+    async def next(self) -> Track | None:
+        return track_queue.get()
 
     def toast(self):
         pass
 
     def _get_status(self):
         if not os.path.exists(self.status_path):
-            with open(self.status_path, "w") as file:
-                file.write("play")
+            set_status("play")
 
-        with open(self.status_path, "r") as file:
-            status = file.read().lower().split()
-            match status:
-                case "next", _:
-                    self.status = Status.NEXT
+        status = get_status().lower().split()
+        match status[0]:
+            case "next":
+                self.status = Status.NEXT
 
-                case "louder", int(volume), _:
-                    self.volume = volume
-                    self.volume_controller.louder(volume)
+            case "volume":
+                self.volume = int(status[1])
+                self.volume_controller.set_volume(self.volume)
+                self.status = Status.PLAY
+                set_status("play")
 
-                case "husher", int(volume), _:
-                    self.volume_controller.husher(volume)
+            case "toast":
+                self.volume_controller.set_volume(10)
+                self.status = Status.TOAST
 
-                case "toast", _:
-                    self.volume_controller.husher(10)
-                    self.status = Status.TOAST
-
-                case "play", _:
-                    self.status = Status.PLAY
-                case _:
-                    return NoReturn
+            case "play":
+                self.status = Status.PLAY
+            case _:
+                return NoReturn
 
     async def play(self):
         pygame.init()
@@ -75,8 +69,11 @@ class Player:
         while True:
             track = await self.next()
 
+            if track is None:
+                await asyncio.sleep(1)
+                continue
             pygame.mixer.music.load(
-                os.path.join(TMP_PATH, f"/track/{track.track_id}.mp3")
+                os.path.join(TMP_PATH, f"tracks/{track.track_id}.mp3")
             )
             pygame.mixer.music.play()
 
@@ -84,10 +81,12 @@ class Player:
                 await asyncio.sleep(1)
 
                 self._get_status()
+                print(self.status)
 
                 if self.status == Status.NEXT:
                     pygame.mixer.music.stop()
                     self.status = Status.PLAY
+                    set_status("play")
                     break
 
         return NoReturn
@@ -95,19 +94,10 @@ class Player:
 
 async def main():
     # 1. read queue
-    # 2. play queue
-    # 3. get signals from y_boter_bot (|<< / || / |> / >>|)
     # 4. If queue is empty start to play playlist (...)
-    # pygame.mixer.init()
-    # pygame.mixer.music.load("/Users/gorsenkovegor/Downloads/mp3/Nirvana.mp3")
-    #
-    # pygame.mixer.music.play()
-    #
-    # while pygame.mixer.music.get_busy():
-    #     pygame.time.Clock().tick(10)
 
     player = Player(
-        status_path=os.path.join(TMP_PATH, "status"),
+        status_path=STATUS_PATH,
         queue_path=os.path.join(TMP_PATH, "track.queue"),
     )
     await player.play()

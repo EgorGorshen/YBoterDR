@@ -8,15 +8,13 @@
         - [x] open menu
     - [ ] like
         если пользователю понравилось то он может добавить трек в избранное
-    - [ ] delete
-        удолить помледний свой трек из очереди
     - [x] find_track 
         - [x] create sneapet
             - [x] python
             - [ ] c (FFmpeg)
         - [x] add track to queue
         поиск трека и по нахождении его отправить снипет
-    - [ ] toast
+    - [x] toast
         когда человек хочет сказать тост, музыка начинает затухать
     - [ ] choose_gift
         выбор подарка
@@ -34,6 +32,7 @@
         заблокировать пользователя
     - [x] info about user ariv and left 
         сообщать о подходе или уезеде пользователя
+    - [x] next track
 
 - [ ] media messages:
     - [ ] photo

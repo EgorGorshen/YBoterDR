@@ -8,12 +8,19 @@ from aiogram.types import (
 )
 from aiogram.fsm.context import FSMContext
 
-from src.handlers.FSMachine import FindTrack
+from src.handlers.FSMachine import FindTrack, Toast
 from src.handlers.admin import inform_the_admins_about_the_com_t_or_left_f
 from src.handlers.keyboards import CHOOSE_TRACK_KEYBOARD, TRUE_FALSE_KEYBOARD
 from src.handlers.messages import REGISTRATION_ERROR_MESSAGE, START_MESSAGE
 from src.logger import Logger
-from src.utils import create_video, data_base, get_user_info_from_message, track_queue
+from src.utils import (
+    create_video,
+    data_base,
+    get_user_info_from_message,
+    get_volume,
+    set_status,
+    track_queue,
+)
 from src.yandex_api import (
     find_track,
     get_track_by_id,
@@ -164,7 +171,7 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         data_base.add_track(data["track_id"], data["name"], data["author"])
         track = data_base.get_track(data["track_id"])
         if track is not None:
-            await track_queue.put(track)
+            track_queue.put(track)
         else:
             await callback.message.answer(
                 "Простите произошла ошибка, попробуде найти трек ещё раз"
@@ -179,6 +186,22 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(
             "Ладно, попробуй ввести запрос по точней: /find_track"
         )
-    print(await track_queue.get())
 
     await state.clear()
+
+
+@user_router.message(Command("toast"))
+async def toast(message: Message, state: FSMContext):
+    set_status("toast")
+    volume = get_volume()
+    await state.set_state(Toast.toast)
+    await state.set_data({"volume": volume})
+    await message.answer("Когда закончишь отправь /done")
+
+
+@user_router.message(Command("done"), Toast.toast)
+async def finish_toast(message: Message, state: FSMContext):
+    set_status(f"volume {(await state.get_data())['volume']}")
+
+    await state.clear()
+    await message.answer("Продолжаем трек")

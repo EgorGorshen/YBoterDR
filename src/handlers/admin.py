@@ -1,9 +1,9 @@
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
 from src.dataclasses import User
-from src.utils import ADMINS_IDS, bot, set_status
+from src.utils import ADMINS_IDS, bot, get_volume, set_status
 
 
 admin_router = Router()
@@ -26,3 +26,28 @@ async def next_track(message: Message):
     set_status("next")
 
     await message.answer("Переключили")
+
+
+@admin_router.message(Command("volume"), F.text.split()[1].isnumeric())
+async def volume(message: Message):
+    """change volume"""
+    if message.chat.id not in ADMINS_IDS:
+        return
+
+    if message.text is None:
+        return
+
+    text = message.text.strip().strip("/")
+
+    if len(text.split()) != 2:
+        await message.answer(
+            "Не правильный запрос нужно ввести /volume [уровень звука не превышающий 100]"
+        )
+
+    _, volume = text
+
+    volume = int(volume) if 10 < int(volume) < 100 else get_volume()
+
+    set_status(f"volume {volume}")
+
+    await message.answer(f"Меняем звук на {volume}")

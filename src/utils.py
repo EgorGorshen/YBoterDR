@@ -83,14 +83,9 @@ async def set_user_commands():
             description="Начните своё путешествие с YBoterDR. Эта команда откроет главное меню.",
         ),
         BotCommand(command="help", description="Получите подсказки и инструкции."),
-        BotCommand(command="add_track_queue", description="Добавьте трек в очередь."),
-        BotCommand(command="like", description="Отметьте понравившийся трек."),
         BotCommand(command="delete", description="Удалите последний добавленный трек."),
         BotCommand(command="find_track", description="Найдите трек по названию."),
         BotCommand(command="toast", description="Сказать тост и затушить музыку."),
-        BotCommand(
-            command="next_tracks", description="Посмотрите следующие треки в очереди."
-        ),
         BotCommand(command="left", description="Сообщите, что вы покидаете вечеринку."),
         BotCommand(
             command="arrived", description="Сообщите, что вы прибыли на вечеринку."

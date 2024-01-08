@@ -81,7 +81,6 @@ class Player:
                 await asyncio.sleep(1)
 
                 self._get_status()
-                print(self.status)
 
                 if self.status == Status.NEXT:
                     pygame.mixer.music.stop()

@@ -10,3 +10,8 @@ class FindTrack(StatesGroup):
 class Toast(StatesGroup):
     toast = State()
     finish_toast = State()
+
+
+class BlockUser(StatesGroup):
+    choose_delta_time = State()
+    add_to_db = State()

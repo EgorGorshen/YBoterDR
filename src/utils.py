@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 import sys
 import json
@@ -151,3 +152,24 @@ def get_volume() -> int:
     except ValueError:
         # Handle the case where the volume could not be parsed to an integer
         return 30
+
+
+def convert_to_timedelta(callback_data):
+    """
+    convert to time delta
+    :callback_data:
+        - <int>[m|h|]
+    """
+    if not callback_data or len(callback_data) < 2:
+        raise ValueError("Invalid callback data")
+
+    time_value = int(callback_data[:-1])
+    time_unit = callback_data[-1]
+
+    match time_unit:
+        case "m":
+            return timedelta(minutes=time_value)
+        case "h":
+            return timedelta(hours=time_value)
+        case _:
+            raise ValueError("Unsupported time unit")

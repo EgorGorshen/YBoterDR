@@ -155,6 +155,13 @@ class DataBase:
             (user.number_of_tracks + 1, tg_id),
         )
 
+    def get_users(self) -> list[User] | None:
+        """Get users from the database excluding admins."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM Users")
+        results = cursor.fetchall()
+        return [User(*result) for result in results]
+
     # >>>>>>>>> tracks
     def add_track(self, track_id: int, name: str, author: str):
         """

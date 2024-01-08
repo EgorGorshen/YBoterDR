@@ -1,4 +1,5 @@
 import os
+
 from aiogram import F, Bot, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (
@@ -39,9 +40,9 @@ async def start(message: Message):
     if from_user is None:
         return
 
-    id, full_name = from_user
+    tg_id, full_name = from_user
 
-    if not data_base.user_reg(id, full_name):
+    if not data_base.user_reg(tg_id, full_name):
         await message.answer(REGISTRATION_ERROR_MESSAGE)
         return
 
@@ -49,19 +50,21 @@ async def start(message: Message):
 
 
 @user_router.message(Command("help"))
-async def help(message: Message):
+async def help_message(message: Message):
+    """send help message"""
     await message.answer(START_MESSAGE)
 
 
 @user_router.message(Command("arrived"))
 async def user_com(message: Message):
+    """on_the_party -> true"""
     from_user = await get_user_info_from_message(message)
     if from_user is None:
         return
 
-    id, _ = from_user
-    data_base.user_in(id)
-    user = data_base.get_user(id)
+    tg_id, _ = from_user
+    data_base.user_in(tg_id)
+    user = data_base.get_user(tg_id)
     if user is None:
         await message.answer("Прежде чем начать пользование запустите команду /start")
         return
@@ -71,13 +74,14 @@ async def user_com(message: Message):
 
 @user_router.message(Command("left"))
 async def user_left(message: Message):
+    """on_the_party -> false"""
     from_user = await get_user_info_from_message(message)
     if from_user is None:
         return
 
-    id, _ = from_user
-    data_base.user_out(id)
-    user = data_base.get_user(id)
+    tg_id, _ = from_user
+    data_base.user_out(tg_id)
+    user = data_base.get_user(tg_id)
     if user is None:
         await message.answer("Прежде чем начать пользование запустите команду /start")
         return
@@ -87,6 +91,7 @@ async def user_left(message: Message):
 
 @user_router.message(Command("find_track"))
 async def find_track_tg(message: Message, state: FSMContext):
+    """init find track function chain"""
     if data_base.is_block(message.chat.id):
         await message.answer("Простите, но произошла ошибка, попробуйте чуть позже")
         return
@@ -165,12 +170,28 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
     if callback.message is None:
         return
 
+    name = (
+        "Someone"
+        if callback.message.from_user is None
+        else callback.message.from_user.full_name
+    )
+
     await callback.message.delete()
+
+    user = data_base.get_user(callback.message.chat.id)
+
+    if user is None:
+        data_base.user_reg(callback.message.chat.id, name, False)
+        user = data_base.get_user(callback.message.chat.id)
+
+        if user is None:
+            return
 
     if callback.data == "true":
         data_base.add_track(data["track_id"], data["name"], data["author"])
         track = data_base.get_track(data["track_id"])
         if track is not None:
+            data_base.user_add_track(user.telegram_id)
             track_queue.put(track)
         else:
             await callback.message.answer(
@@ -179,7 +200,7 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
             return
 
         await callback.message.answer(
-            "Трек [{}({})] Добавлен".format(data["name"], data["author"])
+            f"Трек [{data['name']}({data['author']})] Добавлен"
         )
 
     if callback.data == "false":
@@ -192,6 +213,7 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
 
 @user_router.message(Command("toast"))
 async def toast(message: Message, state: FSMContext):
+    """init toast state"""
     set_status("toast")
     volume = get_volume()
     await state.set_state(Toast.toast)
@@ -201,6 +223,7 @@ async def toast(message: Message, state: FSMContext):
 
 @user_router.message(Command("done"), Toast.toast)
 async def finish_toast(message: Message, state: FSMContext):
+    """finish toast state"""
     set_status(f"volume {(await state.get_data())['volume']}")
 
     await state.clear()

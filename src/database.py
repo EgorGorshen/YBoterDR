@@ -141,7 +141,19 @@ class DataBase:
         if datetime.now() >= end_time:
             self.delete_block(tg_id)
             return False
+
         return True
+
+    def user_add_track(self, tg_id: int):
+        """add 1 to the number of monitored calls that the user has"""
+        cursor = self.conn.cursor()
+        user = self.get_user(tg_id)
+        if user is None:
+            return
+        cursor.execute(
+            "UPDATE Users SET number_of_tracks = ? WHERE telegram_id = ?",
+            (user.number_of_tracks + 1, tg_id),
+        )
 
     # >>>>>>>>> tracks
     def add_track(self, track_id: int, name: str, author: str):

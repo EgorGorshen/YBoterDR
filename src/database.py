@@ -21,7 +21,12 @@ class DataBase:
         """init DataBase class"""
         self.database_path: str = database_path
         self.develop: bool = develop
+        not_ex = not os.path.exists(self.database_path)
+
         self.conn: sqlite3.Connection = sqlite3.connect(database_path)
+
+        self._init_data()
+
         if self.develop:
             if os.path.exists(database_path):
                 self._delete_data()
@@ -41,7 +46,8 @@ class DataBase:
     def _init_data(self):
         """Initialize the database with the schema."""
         init_req = DataBase._read_init_text()
-        self.conn.executescript(init_req)
+        cursor = self.conn.cursor()
+        cursor.executescript(init_req)
         self.conn.commit()
 
     def _delete_data(self):

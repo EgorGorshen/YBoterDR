@@ -17,6 +17,7 @@ from src.logger import Logger
 from src.utils import (
     create_video,
     data_base,
+    get_status,
     get_user_info_from_message,
     get_volume,
     set_status,
@@ -214,6 +215,9 @@ async def set_track(callback: CallbackQuery, state: FSMContext):
 @user_router.message(Command("toast"))
 async def toast(message: Message, state: FSMContext):
     """init toast state"""
+    if get_status() == "toast":
+        await message.answer("Извините, но кто-то другой уже начал говорить тост.")
+        return
     set_status("toast")
     volume = get_volume()
     await state.set_state(Toast.toast)
